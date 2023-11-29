@@ -71,27 +71,29 @@ class Embed(Transform):
 
     def execute(self) -> Dataset:
         dataset = self.child().execute()
-        if self._embedder.device == "cuda":
-            available_gpus = ray.available_resources().get("GPU")
-            if "num_gpus" not in self.resource_args:
-                self.resource_args["num_gpus"] = 1
-            if self.resource_args["num_gpus"] <= 0:
-                raise RuntimeError("Invalid GPU Nums!")
-            gpu_per_task = self.resource_args["num_gpus"]
-
-            output = dataset.map_batches(
-                generate_map_batch_class_from_callable(self._embedder.generate_embeddings),
-                batch_size=self._embedder.batch_size,
-                compute=ActorPoolStrategy(min_size=1, max_size=math.ceil(available_gpus / gpu_per_task)),
-                **self.resource_args
-            )
-        else:
+        if self._embedder.device != "cuda":
             # in case of no gpu required, we use tasks to make it easier
             # to be fusible
-            output = dataset.map_batches(
+            return dataset.map_batches(
                 generate_map_batch_function(self._embedder.generate_embeddings),
                 batch_size=self._embedder.batch_size,
                 **self.resource_args
             )
 
-        return output
+        available_gpus = ray.available_resources().get("GPU")
+        if "num_gpus" not in self.resource_args:
+            self.resource_args["num_gpus"] = 1
+        if self.resource_args["num_gpus"] <= 0:
+            raise RuntimeError("Invalid GPU Nums!")
+        gpu_per_task = self.resource_args["num_gpus"]
+
+        return dataset.map_batches(
+            generate_map_batch_class_from_callable(
+                self._embedder.generate_embeddings
+            ),
+            batch_size=self._embedder.batch_size,
+            compute=ActorPoolStrategy(
+                min_size=1, max_size=math.ceil(available_gpus / gpu_per_task)
+            ),
+            **self.resource_args
+        )

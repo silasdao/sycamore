@@ -58,9 +58,7 @@ class DocSet:
             if truncate_content and document.text_representation is not None:
                 amount_truncated = len(document.text_representation) - truncate_length
                 if amount_truncated > 0:
-                    document.text_representation = (
-                        document.text_representation[:truncate_length] + f" <{amount_truncated} chars>"
-                    )
+                    document.text_representation = f"{document.text_representation[:truncate_length]} <{amount_truncated} chars>"
 
             if document.elements is not None and num_elements >= 0 and len(document.elements) > num_elements:
                 document.elements = document.elements[:num_elements]

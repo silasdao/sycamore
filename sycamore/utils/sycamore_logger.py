@@ -19,5 +19,4 @@ def setup_logger():
 
 def get_logger():
     """Get an application logger"""
-    logger = logging.getLogger("sycamore")
-    return logger
+    return logging.getLogger("sycamore")
