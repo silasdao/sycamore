@@ -54,5 +54,4 @@ class Summarize(NonCPUUser, NonGPUUser, Transform):
 
     def execute(self) -> Dataset:
         input_dataset = self.child().execute()
-        dataset = input_dataset.map(generate_map_function(self._summarizer.summarize))
-        return dataset
+        return input_dataset.map(generate_map_function(self._summarizer.summarize))

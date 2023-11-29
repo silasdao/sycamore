@@ -24,7 +24,11 @@ def generate_map_class(c: Type[Callable[[Document], Document]]) -> Type[Callable
         document = self.base(Document(input_dict))
         return document.data
 
-    new_class = type("CustomRay" + c.__name__, (), {"__init__": ray_init, "__call__": ray_callable})
+    new_class = type(
+        f"CustomRay{c.__name__}",
+        (),
+        {"__init__": ray_init, "__call__": ray_callable},
+    )
     return new_class
 
 
@@ -48,7 +52,11 @@ def generate_flat_map_class(
         documents = self.base(Document(input_dict))
         return [document.data for document in documents]
 
-    new_class = type("CustomRay" + c.__name__, (), {"__init__": ray_init, "__call__": ray_callable})
+    new_class = type(
+        f"CustomRay{c.__name__}",
+        (),
+        {"__init__": ray_init, "__call__": ray_callable},
+    )
     return new_class
 
 
@@ -82,9 +90,7 @@ def _get_documents_from_columnar_format(doc_batch: dict[str, np.ndarray]) -> lis
     rows = doc_batch.values()
 
     for row in zip(*rows):
-        document = {}
-        for i, col in enumerate(cols):
-            document[col] = row[i]
+        document = {col: row[i] for i, col in enumerate(cols)}
         input_docs.append(Document(document))
 
     return input_docs
@@ -125,7 +131,11 @@ def generate_map_batch_class(
 
         return _get_columnar_format_from_documents(output_docs)
 
-    new_class = type("CustomRay" + c.__name__, (), {"__init__": ray_init, "__call__": ray_callable})
+    new_class = type(
+        f"CustomRay{c.__name__}",
+        (),
+        {"__init__": ray_init, "__call__": ray_callable},
+    )
     return new_class
 
 

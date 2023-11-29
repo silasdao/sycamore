@@ -102,10 +102,11 @@ class TestPartition:
     ):
         document = partitioner.partition(read_local_binary)
         assert len(document["elements"]["array"]) == expected_partition_count
-        table_count = 0
-        for partition in document["elements"]["array"]:
-            if partition["type"] == "table":
-                table_count += 1
+        table_count = sum(
+            1
+            for partition in document["elements"]["array"]
+            if partition["type"] == "table"
+        )
         assert expected_table_count == table_count
 
     @pytest.mark.parametrize("path, partition_count", [(TEST_DIR / "resources/data/pdfs/Transformer.pdf", 254)])

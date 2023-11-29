@@ -16,10 +16,10 @@ from sycamore.llms.prompts import (
 
 
 def element_list_formatter(elements: list[Element]) -> str:
-    query = ""
-    for i in range(len(elements)):
-        query += f"ELEMENT {i + 1}: {elements[i]['text_representation']}\n"
-    return query
+    return "".join(
+        f"ELEMENT {i + 1}: {elements[i]['text_representation']}\n"
+        for i in range(len(elements))
+    )
 
 
 class EntityExtractor(ABC):
@@ -65,7 +65,7 @@ class OpenAIEntityExtractor(EntityExtractor):
         else:
             prompt = ENTITY_EXTRACTOR_FEW_SHOT_GUIDANCE_PROMPT
 
-        entities = self._llm.generate(
+        return self._llm.generate(
             prompt_kwargs={
                 "prompt": prompt,
                 "entity": self._entity_name,
@@ -73,7 +73,6 @@ class OpenAIEntityExtractor(EntityExtractor):
                 "query": self._prompt_formatter(sub_elements),
             }
         )
-        return entities
 
     def _handle_zero_shot_prompting(self, document: Document) -> Any:
         sub_elements = [document.elements[i] for i in range((min(self._num_of_elements, len(document.elements))))]
@@ -84,10 +83,13 @@ class OpenAIEntityExtractor(EntityExtractor):
         else:
             prompt = ENTITY_EXTRACTOR_ZERO_SHOT_GUIDANCE_PROMPT
 
-        entities = self._llm.generate(
-            prompt_kwargs={"prompt": prompt, "entity": self._entity_name, "query": self._prompt_formatter(sub_elements)}
+        return self._llm.generate(
+            prompt_kwargs={
+                "prompt": prompt,
+                "entity": self._entity_name,
+                "query": self._prompt_formatter(sub_elements),
+            }
         )
-        return entities
 
 
 class ExtractEntity(Transform):
@@ -102,5 +104,6 @@ class ExtractEntity(Transform):
 
     def execute(self) -> "Dataset":
         input_dataset = self.child().execute()
-        dataset = input_dataset.map(generate_map_function(self._entity_extractor.extract_entity))
-        return dataset
+        return input_dataset.map(
+            generate_map_function(self._entity_extractor.extract_entity)
+        )

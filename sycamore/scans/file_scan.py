@@ -94,8 +94,9 @@ class JsonScan(FileScan):
         self.parallelism = -1 if parallelism is None else parallelism
 
     def execute(self) -> "Dataset":
-        json = read_json(paths=self._paths, parallelism=self.parallelism, **self.resource_args)
-        return json
+        return read_json(
+            paths=self._paths, parallelism=self.parallelism, **self.resource_args
+        )
 
     def format(self):
         return "json"

@@ -71,10 +71,7 @@ class OSDataSource(Datasource):
             "properties": {},
         }
         for k, v in default.items():
-            if k in data:
-                result[k] = data[k]
-            else:
-                result[k] = v
+            result[k] = data[k] if k in data else v
         return result
 
     # The type: ignore is required for the ctx paramter, which is not part of the Datasource
@@ -108,8 +105,7 @@ class OSDataSource(Datasource):
         def create_actions():
             for i, row in enumerate(block):
                 doc = OSDataSource.extract_os_document(row)
-                action = {"_index": index_name, "_id": doc["doc_id"], "_source": doc}
-                yield action
+                yield {"_index": index_name, "_id": doc["doc_id"], "_source": doc}
 
         failures = []
         for success, info in parallel_bulk(client, create_actions()):

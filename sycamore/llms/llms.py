@@ -74,5 +74,4 @@ class OpenAI(LLM):
         guidance.llm = guidance.llms.OpenAI(model=self._model_name, api_key=self._api_key, **self._kwargs)
 
         guidance_program = guidance(prompt_kwargs.pop("prompt"))
-        prediction = guidance_program(**prompt_kwargs)
-        return prediction
+        return guidance_program(**prompt_kwargs)
